@@ -11,6 +11,7 @@ require 'Slim/Slim.php';
 
 \Slim\Slim::registerAutoloader();
 
+
 /**
  * Step 2: Instantiate a Slim application
  *
@@ -19,7 +20,11 @@ require 'Slim/Slim.php';
  * your Slim application now by passing an associative array
  * of setting names and values into the application constructor.
  */
-$app = new \Slim\Slim();
+$app = new \Slim\Slim(array(
+
+	'debug' => false
+
+	));
 
 /**
  * Step 3: Define the Slim application routes
@@ -30,17 +35,29 @@ $app = new \Slim\Slim();
  * is an anonymous function.
  */
 
+//Tratamento de erro
+$app->error(function ( Exception $e ) use ($app) {
+	$erroObj = new stdClass();
+	$erroObj->message = $e->getMessage();
+	// $erroObj->trace = $e->getTraceAsString();
+	$erroObj->file = $e->getFile();
+	$erroObj->line = $e->getLine();
+
+	echo "{'error':".json_encode($erroObj)."}";
+
+});
+
 // GET route
 $app->get('/:controller/:action(/:parameter)',
-    function ($controller, $action, $parameter=null) {
+	function ($controller, $action, $parameter=null) {
         // echo "Controller: $controller<br>";
         // echo "Action: $action<br>";
         // echo "Parameter: $paramter<br>";
-        include_once "classes/{$controller}.php";
-        $classe = new $controller();
-        $chamada = call_user_func_array(array($classe, $action ), array($parameter));
-        echo "{'result':".json_encode($chamada)."}";
-    });
+		include_once "classes/{$controller}.php";
+		$classe = new $controller();
+		$chamada = call_user_func_array(array($classe, $action ), array($parameter));
+		echo "{'result':".json_encode($chamada)."}";
+	});
 /**
  * Step 4: Run the Slim application
  *
